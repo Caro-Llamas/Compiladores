@@ -47,20 +47,21 @@ public class AnalizadorArchivos {
     }
     
     public String obtenerCadena() throws IOException{
-        if(this.valorCaracterAnterior == -1){
+        
+        if(this.valorCaracterAnterior == Caracter.FIN_DOCUMENTO.getValue()){
             return "Fin del archivo";
         }
+             
+        this.valorCaracterActual = 0;//Para obtener el caracter actual
+        String palabra_retorno = "";//Aqui irá la palabra, numero o identificador obtenido
         
-        if(!this.estado_lector){
+        if(!this.estado_lector){//Si aun no se habia empezado a leer el archivo
            this.valorCaracterAnterior = this.buffer.read();
            //Nos posicionamos en la primer letra por ser la primer lectura
            if(this.valorCaracterAnterior == Caracter.ESPACIO_BLANCO.getValue()){
               while((this.valorCaracterAnterior = this.buffer.read()) != Caracter.ESPACIO_BLANCO.getValue()){}
            }
         }
-        
-        this.valorCaracterActual = 0;
-        String palabra_retorno = "";
     
         //Agregamos la letra que ya se leyó
         palabra_retorno += (char) this.valorCaracterAnterior;
