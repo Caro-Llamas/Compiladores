@@ -8,6 +8,8 @@ package compiladores;
 import clases_de_analisis.AnalizadorArchivos;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 
 /**
@@ -38,6 +40,7 @@ public class Compiladores {
         System.out.println(analizador.obtenerCadena());
         System.out.println(analizador.obtenerCadena());
         System.out.println(analizador.obtenerCadena());
+        
     }
     
 }

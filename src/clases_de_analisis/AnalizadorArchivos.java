@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.regex.*;
 
 /**
  *
@@ -24,6 +25,9 @@ public class AnalizadorArchivos {
     private int valorCaracterAnterior;
     private boolean estado_lector;
     
+    //Objetos para checar identificadores
+    private final Pattern patron;
+    
 
     public AnalizadorArchivos(File archivo) throws FileNotFoundException {
         this.archivo_analizar = archivo;
@@ -32,6 +36,7 @@ public class AnalizadorArchivos {
         this.valorCaracterActual = Caracter.ESPACIO_BLANCO.getValue();
         this.valorCaracterAnterior = Caracter.ESPACIO_BLANCO.getValue();
         this.estado_lector = false;//falso si no se ha empezado a leer, y verdadero en caso contrario
+        this.patron = Pattern.compile("^(int$)|(float$)|(char$)|(double$)|(String$)");//expresion regular para identificadores
     }
     
     public char getCaracterActual() throws IOException{
@@ -69,8 +74,18 @@ public class AnalizadorArchivos {
         //Checamos en donde entra el primer caracter
         if(Caracter.LETRA_MAY.isInRange(this.valorCaracterAnterior) || 
            Caracter.LETRA_MIN.isInRange(this.valorCaracterAnterior)){
+            
             //Aqui verificamos si es un valor de variable valido
             palabra_retorno = obtenerVariableValido((char) this.valorCaracterAnterior);
+            
+            //Checamos si es identificador o no
+            Matcher matcher = this.patron.matcher(palabra_retorno);
+            if(matcher.find()){
+                System.out.println("Hay un identificador: " + palabra_retorno);
+            }else{
+                System.out.println("No hay identificador");
+            }
+            
             this.valorCaracterAnterior = this.valorCaracterActual;
         }else if(Caracter.NUMERO.isInRange(this.valorCaracterAnterior)){
            //Aqui verificamos que sea un numero valido
@@ -138,54 +153,53 @@ public class AnalizadorArchivos {
     }
 
     private String obtenerVariableValido(char caracter) throws IOException {
-       String variableValida = "";
-       int caracterAnterior = this.buffer.read();
+        String variableValida = "";
+        int caracterAnterior = this.buffer.read();
        
-       //Checamos los caracteres
-       if(Caracter.LETRA_MAY.isInRange((int) caracter)){
-           variableValida += caracter;
-           //Ciclo que obtiene lo que es una cadena valida
-           while(caracterAnterior != Caracter.ESPACIO_BLANCO.getValue() || 
-                 caracterAnterior !=  Caracter.FIN_DOCUMENTO.getValue()){
-               
-               //Checamos si es minuscula, mayuscula o linea _
-               if(Caracter.LETRA_MAY.isInRange(caracterAnterior) ||
-                  Caracter.LETRA_MIN.isInRange(caracterAnterior) ||
-                  Caracter.SIMBOLO_LINEA_BAJA.getValue() == caracterAnterior){
-                  variableValida += (char)caracterAnterior;//agregamos el caracter
-                  caracterAnterior = this.buffer.read();//avanzamos al siguiente
-               }else{
-                   //No seria valido, asi que finalizamos el ciclo
-                   this.valorCaracterActual = caracterAnterior;
-                   return variableValida;
-               }
-               
-           }
-       }else if(Caracter.LETRA_MIN.isInRange((int) caracter)){
-           variableValida += caracter;
-           //Ciclo que obtiene lo que es una cadena valida
+        //Checamos los caracteres
+        if(Caracter.LETRA_MAY.isInRange((int) caracter)){
+            variableValida += caracter;
+            //Ciclo que obtiene lo que es una cadena valida
             while(caracterAnterior != Caracter.ESPACIO_BLANCO.getValue() || 
-                 caracterAnterior !=  Caracter.FIN_DOCUMENTO.getValue()){
+                caracterAnterior !=  Caracter.FIN_DOCUMENTO.getValue()){
                
-               //Checamos si es minuscula, mayuscula o linea _
-               if(Caracter.LETRA_MAY.isInRange(caracterAnterior) ||
-                  Caracter.LETRA_MIN.isInRange(caracterAnterior) ||
-                  Caracter.SIMBOLO_LINEA_BAJA.getValue() == caracterAnterior){
-                  variableValida += (char)caracterAnterior;//agregamos el caracter
-                  caracterAnterior = this.buffer.read();//avanzamos al siguiente
-               }else{
-                   //No seria valido, asi que finalizamos el ciclo
-                   this.valorCaracterActual = caracterAnterior;
-                   return variableValida;
-               }
+                //Checamos si es minuscula, mayuscula o linea _
+                if(Caracter.LETRA_MAY.isInRange(caracterAnterior) ||
+                    Caracter.LETRA_MIN.isInRange(caracterAnterior) ||
+                    Caracter.SIMBOLO_LINEA_BAJA.getValue() == caracterAnterior){
+                    variableValida += (char)caracterAnterior;//agregamos el caracter
+                    caracterAnterior = this.buffer.read();//avanzamos al siguiente
+                }else{
+                    //No seria valido, asi que finalizamos el ciclo
+                    this.valorCaracterActual = caracterAnterior;
+                    return variableValida;
+                }
                
-           }
-       }else{
+            }
+        }else if(Caracter.LETRA_MIN.isInRange((int) caracter)){
+            variableValida += caracter;
+            
+            //Ciclo que obtiene lo que es una cadena valida
+            while(caracterAnterior != Caracter.ESPACIO_BLANCO.getValue() || 
+                caracterAnterior !=  Caracter.FIN_DOCUMENTO.getValue()){
+                //Checamos si es minuscula, mayuscula o linea _
+                if(Caracter.LETRA_MAY.isInRange(caracterAnterior) ||
+                    Caracter.LETRA_MIN.isInRange(caracterAnterior) ||
+                    Caracter.SIMBOLO_LINEA_BAJA.getValue() == caracterAnterior){
+                    variableValida += (char)caracterAnterior;//agregamos el caracter
+                    caracterAnterior = this.buffer.read();//avanzamos al siguiente
+                }else{
+                    //No seria valido, asi que finalizamos el ciclo
+                    this.valorCaracterActual = caracterAnterior;
+                    return variableValida;
+                }
+            }
+        }else{
            //Si no cumple ninguna, no formaria un nombre valido
            this.valorCaracterActual = caracterAnterior; //Asignamos al valor del caracter actual donde se quedó el buffer
            return variableValida;
-       }
-       return variableValida;
+        }
+        return variableValida;
     }
     
 }
