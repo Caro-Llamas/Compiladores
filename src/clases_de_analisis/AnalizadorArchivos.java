@@ -81,9 +81,9 @@ public class AnalizadorArchivos {
             //Checamos si es identificador o no
             Matcher matcher = this.patron.matcher(palabra_retorno);
             if(matcher.find()){
-                System.out.println("Hay un identificador: " + palabra_retorno);
+                System.out.print("Hay un identificador: ");
             }else{
-                System.out.println("No hay identificador");
+                System.out.print("No hay identificador: ");
             }
             
             this.valorCaracterAnterior = this.valorCaracterActual;
